@@ -15,9 +15,9 @@ from scipy.signal import savgol_filter
 # =============================================================================
 # These values has to be altered mannually to calibrate EVB
 # =============================================================================
-n=237#  no.bins   
-alpha=-693#
-H12=9.5#
+n=200#  no.bins   
+alpha=-690.5#
+H12=8#
 print('alpha=', alpha ,'H12=', H12)
 
 # =============================================================================
@@ -165,6 +165,16 @@ for i in range(n):
         free_energy.append(aa) 
         x.append(b)        
 
+
+# =============================================================================
+# Smooth the data
+# =============================================================================
+interv=int(len(x)/2)
+if (interv %2 ) == 0:
+    interv=interv+1
+sav = savgol_filter(free_energy,interv,7)
+    
+
 # =============================================================================
 # Print out free energy and activation energy        
 # =============================================================================
@@ -180,29 +190,35 @@ print("Reaction free energy","{0:.2f}".format(reac_min-free_min))
 
 
 
-# =============================================================================
-# Smooth the data
-# =============================================================================
-interv=int(len(x)/3)
-if (interv %2 ) == 0:
-    interv=interv+1
-sav = savgol_filter(free_energy,interv,5)
-    
   
 # =============================================================================
 # plot
 # =============================================================================
 plty.plot(x,sav,'.-k',label='Co(TPP) in water')
-plty.xlabel("Reaction Coordinate / e1-e2")
+plty.xlabel("Reaction Coordinate")
+
+
 plty.ylabel("Free Energy (kcal/mol)")
 plty.legend(loc='upper left')
 ax= plty.gca()
+# =============================================================================
+# uncomment the next line to display x-axis values
+#plty.xticks([])
+# =============================================================================
+
 ax.invert_xaxis()
 # =============================================================================
-# Uncomment the section to add a lebel, values have to be typed in mannually
+#  add a lebel, values have to be typed in mannually
 # =============================================================================
-#plty.text(124,1.5,' $\Delta$ G  = 4.2 kcal/mol \n $\Delta$ $\mathregular{G^\ddag}$ = 9.8 kcal/mol ',
-#          bbox=dict(boxstyle="round", fc="none", ec="gray"))
+plty.text(124,1.4,
+          'DFT fitted: \n$\Delta$ $\mathregular{G^\ddag}$ = 9.8 kcal/mol \n$\Delta$ G  = 3.6 kcal/mol' ,
+          bbox=dict(boxstyle="Square", fc="none", ec="black"))
 
 plty.show
 plty.savefig('fig.png',dpi=1000)
+
+
+f = open('coord.txt', 'wb')
+for i in range(len(sav)):
+    f.write("%i %5.2f\n" % (x[i], sav[i]))
+f.close()
